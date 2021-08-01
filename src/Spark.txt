@@ -1,0 +1,100 @@
+ RDD to DF
+ 
+ 
+
+
+
+val rdd_List=sc.parallelize((Array((1,"John"),(2,"Kaggle")))
+
+val convert_to_df= rdd_List.toDF()
+
+val ListDF = spark.createDataFrame(Array((1,"John"),(2,"Kaggle")))
+
+Load Data --
+
+
+
+val posts_no_schemaTxtDF = spark.read.format("text").load("/home/radical/CS1.csv")
+posts_no_schemaTxtDF.printSchema()
+posts_no_schemaTxtDF.show(5)
+posts_no_schemaTxtDF.show(5, truncate=false)
+
+// Specifying format directly
+val posts_no_schemaTxtDF = spark.read.text("/home/radical/CS1.csv")
+posts_no_schemaTxtDF.printSchema()
+posts_no_schemaTxtDF.show(2)
+
+// Read csv
+val posts_no_schemaCSV = spark.read.csv("/home/radical/CS1.csv")
+posts_no_schemaCSV.show(5)
+posts_no_schemaCSV.printSchema()
+
+//Infer Schema
+val posts_inferred = spark.read.option("inferSchema","true").csv("/home/radical/CS1.csv")
+posts_inferred.printSchema()
+
+// Spark reads ahead
+val an_rdd = sc.textFile("home/radical/CS2.csv")
+val a_df = spark.read.text("home/radical/CS2.csv")
+
+
+// There are multiple ways of loading the data
+spark.read.csv("home/radical/CS1.csv").printSchema
+spark.read.option("inferSchema","true").csv("/home/radical/CS1.csv").printSchema
+//spark.read.option("inferSchema","true").option("sep", "|").csv("/home/radical/CS1.csv").printSchema
+//spark.read.options(Map("inferSchema"->"true", "sep"->"|")).csv("/user/radical/stackexchange/posts_all_csv").printSchema
+
+// Get column headers
+// Requires posts csv with header
+posts_inferred.printSchema()
+val posts_headersDF = spark.read.option("inferSchema", "true").option("header", true).csv("/home/radical/CS.csv")
+posts_headersDF.printSchema()
+posts_headersDF.show(5)
+
+// Or directly create the schema
+import org.apache.spark.sql.types._
+
+
+val postsSchema = 
+  StructType(Array(
+              StructField("Id", IntegerType),
+StructField("State", StringType),
+StructField("CM", StringType)))
+
+
+
+val postsDF = spark.read.schema(postsSchema).csv("/home/radical/CS2.csv")
+postsDF.printSchema()
+postsDF.schema
+postsDF.dtypes
+postsDF.columns
+
+// Loading Parquet
+val comments_parquetDF = spark.read.parquet("/user/radical/bse/comments_parquet")
+comments_parquetDF.printSchema()
+comments_parquetDF.show(5)
+
+// Loading JSON
+val tags_jsonDF = spark.read.json("/user/radical/stackexchange/tags_json")
+tags_jsonDF.printSchema()
+comments_parquetDF.show(5)
+
+// We can rename a column
+val postsVCDF = postsDF.withColumnRenamed("State", "StateInIndia")
+postsVCDF.printSchema()
+
+// Rename two columns
+val posts_twoDF = postsDF.withColumnRenamed("ViewCount", "ViewCountStr").withColumnRenamed("Score", "ScoreInt")
+posts_twoDF.printSchema()
+
+// Escape with back ticks, this works
+posts_ticksDF.select("`ViewCount.Str`").show()
+
+// Drop a column
+posts_wcDF.columns
+posts_wcDF.columns.contains("TitleClone1")
+val posts_no_cloneDF = posts_wcDF.drop("TitleClone1")
+posts_no_cloneDF.columns.contains("TitleClone1")
+posts_no_cloneDF.printSchema()
+
+
